@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RoTrivia - Istoria României</title>
+    
+    <script src="DragDropTouch.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #282c34;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+
+        #stats-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            padding: 0 30px;
+            box-sizing: border-box;
+        }
+
+        #score-board { font-size: 20px; font-weight: bold; }
+        #best-score { color: #f39c12; }
+        #lives-container { font-size: 32px; letter-spacing: 10px; }
+        .heart-active { color: #cc0000; }
+        .heart-lost { color: #3a1c1c; }
+
+        /* Zona Cărții Active - z-index mare ca să o putem trage deasupra oricărui element */
+        #active-area {
+            margin-top: 20px;
+            height: 180px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 50; 
+        }
+        
+        .active-card-wrapper {
+            border: 2px dashed transparent;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: grab;
+            transition: opacity 0.2s;
+            touch-action: none; 
+        }
+        .active-card-wrapper:active { cursor: grabbing; }
+        .active-card-wrapper.dragging { 
+            opacity: 0.5; 
+            pointer-events: none !important; 
+        }
+
+        /* Axa Timpului - Extinsă mult pe verticală pentru a prinde cartea din zbor */
+        #timeline-container {
+            position: relative;
+            display: flex;
+            align-items: flex-end; /* Împingem cărțile fix la bază */
+            justify-content: flex-start;
+            width: 100%;
+            height: 420px; /* Containerul este acum foarte înalt */
+            margin-top: -100px; /* Îl tragem în sus, chiar sub cartea activă */
+            padding: 20px 50px 30px 50px; /* 30px jos pentru scrollbar */
+            box-sizing: border-box;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            touch-action: pan-x; 
+            
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+            cursor: grab;
+        }
+
+        #timeline-container::-webkit-scrollbar { height: 10px; }
+        #timeline-container::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
+        #timeline-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.4); border-radius: 10px; }
+        #timeline-container::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.6); }
+        #timeline-container.active { cursor: grabbing; }
+
+        .timeline-line {
+            position: absolute;
+            top: auto;
+            bottom: 130px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            border-top: 1px dashed #666;
+            z-index: 0;
+        }
+
+        /* --- EFECTUL MAGNETIC (Spațiatorul Extins) --- */
+        .gap {
+            position: relative;
+            width: 20px; /* Distanța vizuală mică dintre cărți */
+            align-self: stretch; /* Se întinde ascuns pe toți cei 420px înălțime! */
+            flex-shrink: 0;
+            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Fixăm umbra slotului jos */
+            z-index: 2;
+        }
+
+        /* Aceasta este antena care simte mouse-ul de departe */
+        .gap::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -60px;
+            right: -60px;
+            height: 100%; 
+            z-index: 10;
+        }
+
+        /* Umflarea spațiului la dimensiunea cărții + margine */
+        .gap.drag-over {
+            width: 160px; 
+        }
+
+        /* Desenul cu linie întreruptă unde va cădea cartea */
+        .gap.drag-over::after {
+            content: '';
+            position: absolute;
+            width: 140px;
+            height: 200px;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        /* ------------------------------------------- */
+
+        .card {
+            width: 140px;
+            height: 200px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            color: #333;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            pointer-events: none; 
+            flex-shrink: 0; 
+        }
+        
+        .card-header { padding: 8px; flex-grow: 1; text-align: left; }
+        .card-title { font-weight: 800; font-size: 12px; margin: 0 0 4px 0; line-height: 1.2; }
+        .card-desc { font-size: 10px; color: #777; margin: 0; line-height: 1.2; }
+        .card-image { height: 85px; width: 100%; object-fit: cover; background-color: #eee; pointer-events: none; }
+        .card-footer { text-align: center; font-weight: bold; font-size: 14px; padding: 6px 0; color: white; }
+
+        .footer-active { background-color: #0073a8; }
+        .footer-correct { background-color: #2e8b57; }
+        .footer-error { background-color: #b71c1c; }
+
+        #game-over {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #game-over h1 { color: white; font-size: 40px; margin-bottom: 10px; text-align: center;}
+        #game-over button { padding: 15px 30px; font-size: 20px; font-weight: bold; background: #0073a8; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        #game-over button:hover { background: #005f8a; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+    <div id="stats-container">
+        <div id="score-board">
+            Scor: <span id="current-score">0</span> | Record: <span id="best-score">0</span>
+        </div>
+        <div id="lives-container"></div>
+    </div>
+
+    <div id="active-area">
+        <div class="active-card-wrapper" id="active-card-container" draggable="true"></div>
+    </div>
+
+    <div id="timeline-container">
+        <div class="timeline-line"></div>
+    </div>
+
+    <div id="game-over">
+        <h1>Joc Terminat!</h1>
+        <p id="final-score" style="font-size: 24px; color: #aaa; margin-bottom: 5px;"></p>
+        <p id="new-record-msg" style="color: #f1c40f; font-weight: bold; font-size: 24px; display: none; margin-top: 0; margin-bottom: 20px;">🎉 NOU RECORD! 🎉</p>
+        <button onclick="location.reload()">Joacă din nou</button>
+    </div>
+
+    <script src="events.js"></script>
+
+    <script>
+        let deck = [];
+        let timeline = [];
+        let currentCard = null;
+        let lives = 3;
+        let score = 0;
+        let isProcessing = false;
+
+        let highScore = localStorage.getItem('roTrivia_HighScore') || 0;
+
+        const timelineContainer = document.getElementById('timeline-container');
+        const activeCardContainer = document.getElementById('active-card-container');
+        const livesContainer = document.getElementById('lives-container');
+        const currentScoreEl = document.getElementById('current-score');
+        const bestScoreEl = document.getElementById('best-score');
+
+        activeCardContainer.addEventListener('dragstart', (e) => {
+            if (isProcessing || !currentCard) { e.preventDefault(); return; }
+            e.dataTransfer.setData('text/plain', 'card');
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => activeCardContainer.classList.add('dragging'), 0);
+        });
+
+        activeCardContainer.addEventListener('dragend', () => {
+            activeCardContainer.classList.remove('dragging');
+        });
+
+        function initGame() {
+            bestScoreEl.innerText = highScore; 
+            currentScoreEl.innerText = score;
+            
+            deck = [...eventsData].sort(() => Math.random() - 0.5);
+            timeline.push(deck.pop());
+            updateLivesDisplay();
+            drawNextCard();
+            renderTimeline();
+        }
+
+        function updateLivesDisplay() {
+            let html = '';
+            for(let i = 0; i < 3; i++) {
+                html += i < lives ? '<span class="heart-active">♥</span>' : '<span class="heart-lost">♥</span>';
+            }
+            livesContainer.innerHTML = html;
+        }
+
+        function createCardHTML(cardData, footerClass, footerText) {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <p class="card-title">${cardData.name}</p>
+                        <p class="card-desc">${cardData.desc}</p>
+                    </div>
+                    <img class="card-image" 
+                         src="${cardData.img}" 
+                         alt="${cardData.name}"
+                         onerror="this.onerror=null; this.src='imagini/rezerva.jpg';">
+                    <div class="card-footer ${footerClass}">${footerText}</div>
+                </div>
+            `;
+        }
+
+        function drawNextCard() {
+            if (deck.length === 0) {
+                activeCardContainer.innerHTML = `<h2 style="color:white; text-align:center;">Ai plasat toate cărțile!</h2>`;
+                activeCardContainer.draggable = false;
+                currentCard = null;
+                return;
+            }
+            currentCard = deck.pop();
+            activeCardContainer.innerHTML = createCardHTML(currentCard, 'footer-active', 'când?');
+            activeCardContainer.draggable = true;
+        }
+
+        function renderTimeline() {
+            timelineContainer.innerHTML = '<div class="timeline-line"></div>';
+
+            for (let i = 0; i <= timeline.length; i++) {
+                
+                const gap = document.createElement('div');
+                gap.className = 'gap';
+                
+                if (currentCard && !isProcessing) {
+                    gap.addEventListener('dragenter', (e) => {
+                        e.preventDefault();
+                        gap.classList.add('drag-over'); 
+                    });
+
+                    gap.addEventListener('dragover', (e) => {
+                        e.preventDefault(); 
+                    });
+
+                    gap.addEventListener('dragleave', (e) => {
+                        gap.classList.remove('drag-over'); 
+                    });
+
+                    gap.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        gap.classList.remove('drag-over');
+                        checkPlacement(i);
+                    });
+                }
+                
+                timelineContainer.appendChild(gap);
+
+                if (i < timeline.length) {
+                    const cardData = timeline[i];
+                    let footerClass = cardData.isError ? 'footer-error' : 'footer-correct';
+                    let footerText = cardData.year;
+
+                    const cardDiv = document.createElement('div');
+                    cardDiv.innerHTML = createCardHTML(cardData, footerClass, footerText);
+                    timelineContainer.appendChild(cardDiv.firstElementChild);
+                }
+            }
+        }
+
+        function checkPlacement(insertIndex) {
+            if (!currentCard || isProcessing) return;
+            isProcessing = true;
+
+            const prevCard = timeline[insertIndex - 1];
+            const nextCard = timeline[insertIndex];
+            const currentYear = currentCard.year;
+            let isCorrect = true;
+
+            if (prevCard && currentYear < prevCard.year) isCorrect = false;
+            if (nextCard && currentYear > nextCard.year) isCorrect = false;
+
+            if (isCorrect) {
+                timeline.splice(insertIndex, 0, currentCard);
+                score++;
+                currentScoreEl.innerText = score;
+                if(score > highScore) {
+                    highScore = score;
+                    bestScoreEl.innerText = highScore;
+                    localStorage.setItem('roTrivia_HighScore', highScore);
+                }
+
+                isProcessing = false;
+                drawNextCard();
+                renderTimeline();
+                
+                setTimeout(() => {
+                    const cardsOnBoard = timelineContainer.querySelectorAll('.card');
+                    if (cardsOnBoard[insertIndex]) {
+                        cardsOnBoard[insertIndex].scrollIntoView({ behavior: 'smooth', inline: 'center' });
+                    }
+                }, 50);
+
+            } else {
+                lives--;
+                updateLivesDisplay();
+                currentCard.isError = true;
+
+                let correctIndex = 0;
+                while (correctIndex < timeline.length && timeline[correctIndex].year < currentCard.year) {
+                    correctIndex++;
+                }
+
+                timeline.splice(correctIndex, 0, currentCard);
+                activeCardContainer.style.opacity = '0';
+                renderTimeline();
+
+                setTimeout(() => {
+                    const cardsOnBoard = timelineContainer.querySelectorAll('.card');
+                    if(cardsOnBoard[correctIndex]) {
+                        cardsOnBoard[correctIndex].scrollIntoView({ behavior: 'smooth', inline: 'center' });
+                    }
+                }, 50);
+
+                setTimeout(() => {
+                    if (lives <= 0) {
+                        gameOver();
+                    } else {
+                        activeCardContainer.style.opacity = '1';
+                        isProcessing = false;
+                        drawNextCard();
+                        renderTimeline();
+                    }
+                }, 2000); 
+            }
+        }
+
+        function gameOver() {
+            const gameOverScreen = document.getElementById('game-over');
+            document.getElementById('final-score').innerText = `Scor final: ${score}`;
+            if(score === parseInt(highScore) && score > 0) {
+                document.getElementById('new-record-msg').style.display = 'block';
+            }
+            gameOverScreen.style.display = 'flex';
+        }
+
+        timelineContainer.addEventListener('wheel', (evt) => {
+            evt.preventDefault();
+            timelineContainer.scrollLeft += evt.deltaY * 2; 
+        });
+        
+        let isDown = false;
+        let startX, scrollLeft;
+
+        timelineContainer.addEventListener('mousedown', (e) => {
+            isDown = true;
+            timelineContainer.classList.add('active'); 
+            startX = e.pageX - timelineContainer.offsetLeft;
+            scrollLeft = timelineContainer.scrollLeft;
+            timelineContainer.style.scrollBehavior = 'auto'; 
+        });
+        timelineContainer.addEventListener('mouseleave', () => {
+            isDown = false;
+            timelineContainer.classList.remove('active');
+            timelineContainer.style.scrollBehavior = 'smooth'; 
+        });
+        timelineContainer.addEventListener('mouseup', () => {
+            isDown = false;
+            timelineContainer.classList.remove('active');
+            timelineContainer.style.scrollBehavior = 'smooth';
+        });
+        timelineContainer.addEventListener('mousemove', (e) => {
+            if (!isDown) return; 
+            e.preventDefault(); 
+            const x = e.pageX - timelineContainer.offsetLeft;
+            const walk = (x - startX) * 1.5; 
+            timelineContainer.scrollLeft = scrollLeft - walk;
+        });
+        
+        initGame();
+    </script>
+</body>
+</html>
