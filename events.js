@@ -1,12 +1,8 @@
-// events.js - Baza de date cu ID-uri unice și găzduire locală
 const eventsData = [
-    // --- ANTICHITATE ȘI FORMAREA POPORULUI ---
     { id: "00001", name: "Unificarea triburilor dacice", desc: "Burebista formează primul stat centralizat dac.", year: -82, img: "imagini/00001.jpg" },
     { id: "00002", name: "Primul Război Daco-Roman", desc: "Decebal se confruntă cu armatele lui Traian.", year: 101, img: "imagini/00002.jpg" },
     { id: "00003", name: "Cucerirea Daciei", desc: "Împăratul Traian transformă Dacia în provincie romană.", year: 106, img: "imagini/00003.jpg" },
     { id: "00004", name: "Retragerea Aureliană", desc: "Armata și administrația romană se retrag la sud de Dunăre.", year: 271, img: "imagini/00004.jpg" },
-    
-    // --- EVUL MEDIU (ÎNTEMEIEREA STATELOR) ---
     { id: "00005", name: "Bătălia de la Posada", desc: "Basarab I înfrânge armata maghiară, obținând independența.", year: 1330, img: "imagini/00005.jpg" },
     { id: "00006", name: "Descălecatul Moldovei", desc: "Bogdan I respinge suzeranitatea maghiară.", year: 1359, img: "imagini/00006.jpg" },
     { id: "00007", name: "Bătălia de la Rovine", desc: "Mircea cel Bătrân respinge invazia otomană a lui Baiazid I.", year: 1395, img: "imagini/00007.jpg" },
@@ -20,8 +16,6 @@ const eventsData = [
     { id: "00015", name: "Bătălia de la Șelimbăr", desc: "Mihai Viteazul înfrânge oastea lui Andrei Bathory.", year: 1599, img: "imagini/00015.jpg" },
     { id: "00016", name: "Prima Unire a Țărilor Române", desc: "Mihai Viteazul devine domn al Țării Românești, Transilvaniei și Moldovei.", year: 1600, img: "imagini/00016.jpg" },
     { id: "00017", name: "Asasinarea lui Mihai Viteazul", desc: "Ucis pe Câmpia Turzii din ordinul lui Basta.", year: 1601, img: "imagini/00017.jpg" },
-
-    // --- SECOLELE XVII - XVIII ---
     { id: "00018", name: "Pravila lui Vasile Lupu", desc: "Tipărirea primei legi scrise din Moldova.", year: 1646, img: "imagini/00018.jpg" },
     { id: "00019", name: "Biblia de la București", desc: "Prima traducere completă a Bibliei în limba română.", year: 1688, img: "imagini/00019.jpg" },
     { id: "00020", name: "Diploma Leopoldină", desc: "Transilvania trece sub stăpânirea Imperiului Habsburgic.", year: 1691, img: "imagini/00020.jpg" },
@@ -31,8 +25,6 @@ const eventsData = [
     { id: "00024", name: "Anexarea Bucovinei", desc: "Imperiul Habsburgic anexează nordul Moldovei.", year: 1775, img: "imagini/00024.jpg" },
     { id: "00025", name: "Răscoala lui Horea, Cloșca și Crișan", desc: "Revoltă țărănească majoră în Transilvania.", year: 1784, img: "imagini/00025.jpg" },
     { id: "00026", name: "Supplex Libellus Valachorum", desc: "Petiția românilor transilvăneni pentru drepturi politice.", year: 1791, img: "imagini/00026.jpg" },
-
-    // --- SECOLUL XIX (RENAȘTEREA NAȚIONALĂ) ---
     { id: "00027", name: "Pacea de la București", desc: "Basarabia este anexată de Imperiul Rus.", year: 1812, img: "imagini/00027.jpg" },
     { id: "00028", name: "Revoluția lui Tudor Vladimirescu", desc: "Mișcarea ce pune capăt epocii fanariote.", year: 1821, img: "imagini/00028.jpg" },
     { id: "00029", name: "Revenirea la domniile pământene", desc: "Grigore al IV-lea Ghica și Ioniță Sandu Sturdza.", year: 1822, img: "imagini/00029.jpg" },
@@ -52,8 +44,6 @@ const eventsData = [
     { id: "00043", name: "Proclamarea Regatului", desc: "România devine regat, iar Carol I devine primul rege.", year: 1881, img: "imagini/00043.jpg" },
     { id: "00044", name: "Aderarea la Tripla Alianță", desc: "Tratat secret semnat cu Germania și Austro-Ungaria.", year: 1883, img: "imagini/00044.jpg" },
     { id: "00045", name: "Memorandumul Transilvănenilor", desc: "Petiție pentru drepturile etnicilor români din Austro-Ungaria.", year: 1892, img: "imagini/00045.jpg" },
-
-    // --- SECOLUL XX (RĂZBOAIE ȘI UNIRE) ---
     { id: "00046", name: "Zborul lui Traian Vuia", desc: "Primul zbor autopropulsat cu un aparat mai greu decât aerul.", year: 1906, img: "imagini/00046.jpg" },
     { id: "00047", name: "Marea Răscoală Țărănească", desc: "Revoltă sângeroasă din cauza sărăciei extreme a țăranilor.", year: 1907, img: "imagini/00047.jpg" },
     { id: "00048", name: "Al Doilea Război Balcanic", desc: "România obține Cadrilaterul prin Pacea de la București.", year: 1913, img: "imagini/00048.jpg" },
@@ -74,8 +64,6 @@ const eventsData = [
     { id: "00063", name: "Treceți Prutul!", desc: "Intrarea în Al Doilea Război Mondial împotriva URSS.", year: 1941, img: "imagini/00063.jpg" },
     { id: "00064", name: "Bătălia de la Stalingrad", desc: "Dezastru militar uriaș pentru armatele română și germană.", year: 1942, img: "imagini/00064.jpg" },
     { id: "00065", name: "Întoarcerea Armelor", desc: "Regele Mihai îl arestează pe Antonescu și iese din Axă.", year: 1944, img: "imagini/00065.jpg" },
-
-    // --- COMUNISMUL ---
     { id: "00066", name: "Instalarea guvernului Petru Groza", desc: "Comunizarea forțată a țării impusă de sovietici (6 Martie).", year: 1945, img: "imagini/00066.jpg" },
     { id: "00067", name: "Furtarea Alegerilor", desc: "Partidul Comunist falsifică masiv alegerile parlamentare.", year: 1946, img: "imagini/00067.jpg" },
     { id: "00068", name: "Proclamarea Republicii (RPR)", desc: "Regele Mihai I este forțat să abdice pe 30 Decembrie.", year: 1947, img: "imagini/00068.jpg" },
@@ -87,12 +75,11 @@ const eventsData = [
     { id: "00074", name: "Cutremurul din Vrancea", desc: "Dezastru național (7.2 grade pe Richter) în 4 martie.", year: 1977, img: "imagini/00074.jpg" },
     { id: "00075", name: "Revolta de la Brașov", desc: "Muncitorii de la uzina Steagul Roșu protestează contra regimului.", year: 1987, img: "imagini/00075.jpg" },
     { id: "00076", name: "Revoluția Română", desc: "Căderea sângeroasă a dictaturii comuniste (Decembrie).", year: 1989, img: "imagini/00076.jpg" },
-
-    // --- EPOCA CONTEMPORANĂ ---
     { id: "00077", name: "Piața Universității și Mineriada", desc: "Proteste anticomuniste reprimate violent de mineri (Iunie).", year: 1990, img: "imagini/00077.jpg" },
     { id: "00078", name: "Constituția Democratică", desc: "Adoptarea noii Constituții prin referendum național.", year: 1991, img: "imagini/00078.jpg" },
     { id: "00079", name: "Declarația de la Snagov", desc: "Consens politic național pentru integrarea euro-atlantică.", year: 1995, img: "imagini/00079.jpg" },
     { id: "00080", name: "Aderarea la NATO", desc: "România devine stat membru cu drepturi depline.", year: 2004, img: "imagini/00080.jpg" },
     { id: "00081", name: "Aderarea la Uniunea Europeană", desc: "Tratatul intră în vigoare la 1 ianuarie.", year: 2007, img: "imagini/00081.jpg" },
     { id: "00082", name: "Tragedia de la Colectiv", desc: "Incendiul declanșează proteste masive și demisia guvernului.", year: 2015, img: "imagini/00082.jpg" }
+
 ];
