@@ -23,6 +23,7 @@
     <script src="events.js"></script>
     <script>
         let deck = [];
+		let combinedEvents = [];
         let timeline = [];
         let currentCard = null;
         let lives = 3;
@@ -92,11 +93,33 @@
         function initGame() {
             bestScoreEl.innerText = recordGlobal; 
             currentScoreEl.innerText = score;
-            deck = [...eventsData].sort(() => Math.random() - 0.5);
+            deck = [...combinedEvents].sort(() => Math.random() - 0.5);
             timeline.push(deck.pop());
             updateLivesDisplay();
             drawNextCard();
             renderTimeline();
+        }
+		
+		function pornesteJocul() {
+            const errorMsg = document.getElementById('start-error-msg');
+            const modalBox = document.getElementById('start-modal-box');
+            errorMsg.style.display = 'none';
+            combinedEvents = []; 
+            if (document.getElementById('chk-9').checked) combinedEvents = combinedEvents.concat(eventsData9);
+            if (document.getElementById('chk-10').checked) combinedEvents = combinedEvents.concat(eventsData10);
+            if (document.getElementById('chk-11').checked) combinedEvents = combinedEvents.concat(eventsData11);
+            if (document.getElementById('chk-12').checked) combinedEvents = combinedEvents.concat(eventsData12);
+            if (combinedEvents.length === 0) {
+                errorMsg.style.display = 'block';
+                modalBox.classList.add('shake-text');
+                setTimeout(() => {
+                    modalBox.classList.remove('shake-text');
+                }, 400);
+                
+                return;
+            }
+            document.getElementById('start-menu-modal').style.display = 'none';
+            initGame();
         }
 
         function updateLivesDisplay() {
@@ -115,9 +138,8 @@
                         <p class="card-desc">${cardData.desc}</p>
                     </div>
                     <img class="card-image" 
-                         src="${cardData.img}" 
-                         alt="${cardData.name}"
-                         onerror="this.onerror=null; this.src='imagini/rezerva.jpg';">
+                         src="imagini/clasa12.jpg" 
+                         alt="Istoria României Clasa 12">
                     <div class="card-footer ${footerClass}">${footerText}</div>
                 </div>
             `;
@@ -214,6 +236,8 @@
                 lives--;
                 updateLivesDisplay();
                 currentCard.isError = true;
+				
+				document.getElementById('wrong-answer-overlay').style.display = 'flex';
 
                 let correctIndex = 0;
                 while (correctIndex < timeline.length && timeline[correctIndex].year < currentCard.year) {
@@ -232,6 +256,7 @@
                 }, 50);
 
                 setTimeout(() => {
+					document.getElementById('wrong-answer-overlay').style.display = 'none';
                     if (lives <= 0) {
                         declanseazaGameOver(score);
                     } else {
@@ -304,9 +329,29 @@
             const walk = (x - startX) * 1.5; 
             timelineContainer.scrollLeft = scrollLeft - walk;
         });
-        
-        initGame();
     </script>
+<div id="start-menu-modal" class="modal-overlay">
+    <div class="modal-content" id="start-modal-box">
+        <h2>ISTORIE</h2>
+        <p>Selectează cel puțin o clasă pentru a începe:</p>
+        
+        <div style="text-align: left; margin: 20px auto; width: fit-content; font-size: 18px; line-height: 1.8;">
+            <label><input type="checkbox" id="chk-9" value="9" disabled> Clasa a IX-a</label><br>
+            <label><input type="checkbox" id="chk-10" value="10" disabled> Clasa a X-a</label><br>
+            <label><input type="checkbox" id="chk-11" value="11"> Clasa a XI-a</label><br>
+            <label><input type="checkbox" id="chk-12" value="12" checked> Clasa a XII-a</label>
+        </div>
+		
+		<p id="start-error-msg" style="color: #ff4d4d; font-weight: bold; display: none; margin-bottom: 15px;">
+            ⚠️ Bifează cel puțin o clasă validă!
+        </p>
+
+        <button onclick="pornesteJocul()">Start Joc</button>
+    </div>
+</div>
+<div id="wrong-answer-overlay" style="display: none;">
+    <h1 class="shake-text">GREȘIT !</h1>
+</div>
 <div id="game-over-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
         <h2>Game Over</h2>
