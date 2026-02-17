@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RoTrivia - Istoria României</title>
 	<link rel="stylesheet" href="style.css">
+	<link rel="manifest" href="manifest.json">
+	<meta name="theme-color" content="#2c3e50">
+	<script>
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('sw.js');
+		}
+	</script>
     <script src="DragDropTouch.min.js"></script>
 </head>
 <body>
@@ -405,3 +412,4 @@
 </div>
 </body>
 </html>
+
