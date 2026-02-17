@@ -30,6 +30,8 @@
         let score = 0;
         let isProcessing = false;
 		let recordGlobal = 0;
+		let scorMinimTop10 = 0;
+		let numarJucatoriTop = 0;
 
 		const BIN_ID = "699374fcd0ea881f40bf868c";
 		const ACCESS_KEY = "$2a$10$p3wc8gKUNVvCTvnHkeVu6OFvVJ8ElCSl7lp.7z40eNMlME5QjNt42";
@@ -67,11 +69,16 @@
 			}
 		}
 		incarcaTop10().then(top => {
-			if (top && top.length > 0) {
-				recordGlobal = top[0].scor; 
-				document.getElementById('best-score').innerText = recordGlobal;
-			}
-		});
+            if (top && top.length > 0) {
+                recordGlobal = top[0].scor; 
+                document.getElementById('best-score').innerText = recordGlobal;
+                
+                numarJucatoriTop = top.length;
+                if (top.length >= 10) {
+                    scorMinimTop10 = top[9].scor; 
+                }
+            }
+        });
 		
         const timelineContainer = document.getElementById('timeline-container');
         const activeCardContainer = document.getElementById('active-card-container');
@@ -105,10 +112,18 @@
             const modalBox = document.getElementById('start-modal-box');
             errorMsg.style.display = 'none';
             combinedEvents = []; 
-            if (document.getElementById('chk-9').checked) combinedEvents = combinedEvents.concat(eventsData9);
-            if (document.getElementById('chk-10').checked) combinedEvents = combinedEvents.concat(eventsData10);
-            if (document.getElementById('chk-11').checked) combinedEvents = combinedEvents.concat(eventsData11);
-            if (document.getElementById('chk-12').checked) combinedEvents = combinedEvents.concat(eventsData12);
+            if (document.getElementById('chk-9').checked) {
+                combinedEvents = combinedEvents.concat(eventsData9.map(e => ({...e, img: 'imagini/clasa9.jpg'})));
+            }
+            if (document.getElementById('chk-10').checked) {
+                combinedEvents = combinedEvents.concat(eventsData10.map(e => ({...e, img: 'imagini/clasa10.jpg'})));
+            }
+            if (document.getElementById('chk-11').checked) {
+                combinedEvents = combinedEvents.concat(eventsData11.map(e => ({...e, img: 'imagini/clasa11.jpg'})));
+            }
+            if (document.getElementById('chk-12').checked) {
+                combinedEvents = combinedEvents.concat(eventsData12.map(e => ({...e, img: 'imagini/clasa12.jpg'})));
+            }
             if (combinedEvents.length === 0) {
                 errorMsg.style.display = 'block';
                 modalBox.classList.add('shake-text');
@@ -138,8 +153,9 @@
                         <p class="card-desc">${cardData.desc}</p>
                     </div>
                     <img class="card-image" 
-                         src="imagini/clasa12.jpg" 
-                         alt="Istoria României Clasa 12">
+                         src="${cardData.img}" 
+                         alt="${cardData.name}"
+                         onerror="this.onerror=null; this.src='imagini/rezerva.jpg';">
                     <div class="card-footer ${footerClass}">${footerText}</div>
                 </div>
             `;
@@ -269,9 +285,21 @@
             }
         }
 		function declanseazaGameOver(scorFinal) {
-			document.getElementById("final-score").innerText = scorFinal;
-			document.getElementById("game-over-modal").style.display = "flex";
-		}
+            document.getElementById("final-score").innerText = scorFinal;
+            if (scorFinal > 0 && (scorFinal > scorMinimTop10 || numarJucatoriTop < 10)) {
+                document.getElementById("mesaj-top").innerText = "🎉 Ai intrat în Top 10! Cum te cheamă?";
+                document.getElementById("nume-jucator").style.display = "";
+                document.getElementById("btn-salveaza-scor").style.display = "";
+                document.getElementById("btn-restart-simplu").style.display = "none";
+            } else {
+                document.getElementById("mesaj-top").innerText = "Scorul tău nu este suficient pentru a intra în Top 10.";
+                document.getElementById("nume-jucator").style.display = "none";
+                document.getElementById("btn-salveaza-scor").style.display = "none";
+                document.getElementById("btn-restart-simplu").style.display = "";
+            }
+
+            document.getElementById("game-over-modal").style.display = "flex";
+        }
 		async function trimiteScor() {
 			const inputNume = document.getElementById("nume-jucator");
 			const nume = inputNume.value.trim() || "Anonim";
@@ -358,9 +386,10 @@
         <p>Scorul tău: <span id="final-score" style="font-weight: bold; color: #4caf50; font-size: 24px;">0</span></p>
         
         <div id="nume-input-section">
-            <p>Ai intrat în top! Cum te cheamă?</p>
+            <p id="mesaj-top">Ai intrat în top! Cum te cheamă?</p>
             <input type="text" id="nume-jucator" placeholder="Numele tău" maxlength="15">
             <button id="btn-salveaza-scor" onclick="trimiteScor()">Salvează Scorul</button>
+            <button id="btn-restart-simplu" onclick="location.reload()" style="display: none; background-color: #e74c3c; margin-top: 10px;">Joacă din nou</button>
         </div>
 
         <div id="loading-top" style="display: none;">
